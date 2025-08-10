@@ -1,16 +1,14 @@
-import StreamModel.Person;
-import StreamModel.Person2;
-import StreamModel.Student;
-import StreamModel.TransactionN;
+import StreamModel.*;
 
 import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -50,11 +48,137 @@ public class Main {
         students.add(new Student("Bob", 40));
         students.add(new Student("Cat", 55));
 
-        System.out.println(sumPriceByTransactionN(tr));
+        List<Employee> employees = List.of(
+                new Employee("John", "IT"),
+                new Employee("Anna", "HR"),
+                new Employee("Mike", "IT")
+        );
+
+        List<List<Integer>> list = List.of(
+                List.of(1, 2),
+                List.of(3, 4),
+                List.of(5)
+        );
+
+        List<Product> products = List.of(
+                new Product("Phone", "Electronics", 500),
+                new Product("Laptop", "Electronics", 1000),
+                new Product("Chair", "Furniture", 200),
+                new Product("Table", "Furniture", 400)
+        );
+
+        System.out.println(cheapProductByCategory(products));
+    }
+
+    //Самый дешевый товар по категории
+    public static Map<String, Product> cheapProductByCategory(List<Product> products) {
+        return products.stream()
+                .collect(Collectors.groupingBy(
+                        Product::category,
+                        Collectors.collectingAndThen(
+                                Collectors.minBy(
+                                        Comparator.comparingDouble(Product::price)),
+                                Optional::get
+                        )
+                ));
+    }
+
+    //Самый дешевый товар по категории 2
+    public static Map<String, Product> cheapProductByCategory2(List<Product> products) {
+        return products.stream()
+                .collect(toMap(Product::category,
+                        Function.identity(),
+                        BinaryOperator.minBy(
+                                Comparator.comparingDouble(Product::price))));
+    }
+
+
+    //Средний бал между студентов
+    public static Map<String, Double> averagePriceByCategory(List<Product> products) {
+        return products.stream()
+                .collect(Collectors.groupingBy(
+                        Product::category,
+                        averagingDouble(Product::price)
+                ));
+    }
+
+    //FlatMap
+    public static List<Integer> flatMap(List<List<Integer>> numbers) {
+        return numbers.stream()
+                .flatMap(List::stream)
+                .toList();
+    }
+
+    //Объединение строк
+    public static String joinLine(List<String> words) {
+        return String.join(", ", words);
+    }
+
+    //Группировка сотрудников
+    public static Map<String, Long> groupEmployees(List<Employee> empl) {
+        return empl.stream()
+                .collect(Collectors.groupingBy(
+                        Employee::department,
+                        Collectors.counting()
+                ));
+    }
+
+    //Сортировка по длине и алфавиту
+    public static List<String> sortByLength(List<String> words) {
+        return words.stream()
+                .map(String::toLowerCase)
+                .sorted(Comparator.comparing(String::length)
+                        .thenComparing(String::compareToIgnoreCase))
+                .toList();
+
+    }
+
+    //Partitioning
+    public static Map<Boolean, List<String>> partitionByPalindrome2(List<String> words) {
+        return words.stream()
+                .collect(Collectors.partitioningBy(
+                        w -> w.equalsIgnoreCase(new StringBuilder(w)
+                                .reverse()
+                                .toString())
+                ));
+    }
+
+    //Top N элементов
+    public static List<Integer> topThreeElements(List<Integer> nums) {
+        return nums.stream()
+                .sorted(Comparator.reverseOrder())
+                .limit(3)
+                .toList();
+    }
+
+    //Первый уникальный символ
+    public static Optional<Character> firstDistinctLetter(String word) {
+        return word.chars()
+                .map(Character::toLowerCase)
+                .mapToObj(w -> (char) w)
+                .collect(Collectors.groupingBy(
+                        Function.identity(),
+                        Collectors.counting()
+                )).entrySet().stream()
+                .filter(e -> e.getValue() == 1)
+                .map(Map.Entry::getKey)
+                .findFirst();
+    }
+
+    //Частота слов
+    public static Map<String, Long> mapWords(String words) {
+        return Arrays.stream(
+                        words.split("\\W+"))
+                .map(String::toLowerCase)
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.groupingBy(
+                        Function.identity(),
+                        Collectors.counting()
+                ));
     }
 
     //Уникальные элементы
-    public static List<Integer> distinctNumber(List<Integer> nums){
+    public static List<Integer> distinctNumber(List<Integer> nums) {
         return nums.stream()
                 .distinct()
                 .sorted()
@@ -62,7 +186,7 @@ public class Main {
     }
 
     //Сумма цен по категориям
-    public static Map<String, Double> sumPriceByTransactionN(List<TransactionN> transactionNS){
+    public static Map<String, Double> sumPriceByTransactionN(List<TransactionN> transactionNS) {
         return transactionNS.stream()
                 .collect(Collectors.groupingBy(
                         TransactionN::category,
@@ -71,19 +195,19 @@ public class Main {
     }
 
     //Максимальное число
-    public static Optional<Integer> maxNumber(List<Integer> nums){
+    public static Optional<Integer> maxNumber(List<Integer> nums) {
         return nums.stream().max(Integer::compareTo);
     }
 
     //Максимальное число 2
-    public static Optional<Integer> maxNumber2(List<Integer> nums){
+    public static Optional<Integer> maxNumber2(List<Integer> nums) {
         return nums.stream()
                 .sorted(Comparator.reverseOrder())
                 .findFirst();
     }
 
     //Группировка по первой букве
-    public static Map<Character, List<String>> groupFirstLetter(List<String> words){
+    public static Map<Character, List<String>> groupFirstLetter(List<String> words) {
         return words.stream()
                 .map(String::toLowerCase)
                 .collect(Collectors.groupingBy(
@@ -92,7 +216,7 @@ public class Main {
     }
 
     //Фильтрация и сортировка
-    public static List<String> filterAndSort(List<String> words){
+    public static List<String> filterAndSort(List<String> words) {
         return words.stream()
                 .filter(w -> w.startsWith("a"))
                 .sorted()
@@ -100,7 +224,7 @@ public class Main {
     }
 
     //Map слово → длина
-    public static Map<String, Long> mapLengthWord(List<String> words){
+    public static Map<String, Long> mapLengthWord(List<String> words) {
         return words.stream()
                 .collect(Collectors.groupingBy(
                         Function.identity(),
@@ -109,7 +233,7 @@ public class Main {
     }
 
     //Первые N чётных чисел
-    public static List<Integer> evenNumbers(int number){
+    public static List<Integer> evenNumbers(int number) {
         return IntStream.range(0, number)
                 .map(i -> i * 2)
                 .boxed()
@@ -117,28 +241,28 @@ public class Main {
     }
 
     //Подсчет строк длиннее 5 символов
-    public static long sizeLineMoreFive(List<String> words){
+    public static long sizeLineMoreFive(List<String> words) {
         return words.stream()
                 .filter(w -> w.length() > 5)
                 .count();
     }
 
     //Сумма всех чисел
-    public static int sumNumber(List<Integer> nums){
+    public static int sumNumber(List<Integer> nums) {
         return nums.stream()
                 .mapToInt(Integer::intValue)
                 .sum();
     }
 
     //Список строк в верхнем регистре
-    public static List<String> toLowerCaseWords(List<String> words){
+    public static List<String> toLowerCaseWords(List<String> words) {
         return words.stream()
                 .map(String::toLowerCase)
                 .toList();
     }
 
     //Подсчёт количества слов в каждой группе по длине
-    public static Map<Integer, Long> countWordsByLength(List<String> words){
+    public static Map<Integer, Long> countWordsByLength(List<String> words) {
         return words.stream()
                 .collect(Collectors.groupingBy(
                         String::length,
