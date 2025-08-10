@@ -8,7 +8,7 @@ public class Main {
         System.out.println(uniqueMorseRepresentations(new String[]{"gin","zen","gig","msg"}));
     }
 
-    public static int uniqueMorseRepresentations(String[] words) {
+    protected static int uniqueMorseRepresentations(String[] words) {
         HashMap<Character, String> map = new HashMap<>();
         map.put('a', ".-");
         map.put('b', "-...");
