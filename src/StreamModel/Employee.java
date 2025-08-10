@@ -1,4 +1,4 @@
 package StreamModel;
 
-public record Employee(String name, String department) {
+public record Employee(String name, String department, double salary) {
 }

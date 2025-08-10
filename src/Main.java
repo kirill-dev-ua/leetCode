@@ -49,9 +49,10 @@ public class Main {
         students.add(new Student("Cat", 55));
 
         List<Employee> employees = List.of(
-                new Employee("John", "IT"),
-                new Employee("Anna", "HR"),
-                new Employee("Mike", "IT")
+                new Employee("John", "IT", 2000.0),
+                new Employee("Anna", "HR", 1500.0),
+                new Employee("Mike", "IT", 2500.0),
+                new Employee("Sara", "Finance", 3000.0)
         );
 
         List<List<Integer>> list = List.of(
@@ -67,7 +68,88 @@ public class Main {
                 new Product("Table", "Furniture", 400)
         );
 
-        System.out.println(cheapProductByCategory(products));
+        List<Order> orders = List.of(
+                new Order("Alice", 120.50),
+                new Order("Bob", 200.00),
+                new Order("Alice", 99.99),
+                new Order("Bob", 50.25),
+                new Order("Charlie", 75.00)
+        );
+
+        List<Employee2> employees2 = List.of(
+                new Employee2("John", List.of("Java", "Spring", "SQL")),
+                new Employee2("Anna", List.of("Python", "Django", "SQL")),
+                new Employee2("Mike", List.of("Java", "Kotlin", "Spring"))
+        );
+
+        List<Author> authors = List.of(
+                new Author("Tolkien", List.of("Hobbit", "Lord of the Rings")),
+                new Author("Rowling", List.of("Harry Potter 1", "Harry Potter 2")),
+                new Author("Martin", List.of("Game of Thrones", "Clash of Kings"))
+        );
+
+        List<User> users = List.of(
+                new User("Alice", List.of(new Transaction(1, 120.5), new Transaction(2, 75.0))),
+                new User("Bob", List.of(new Transaction(3, 200.0))),
+                new User("Charlie", List.of(new Transaction(4, 50.0), new Transaction(5, 300.0)))
+        );
+
+        System.out.println(allTransactionAllUsers(users));
+    }
+
+    //Все транзакции всех пользователей
+    public static List<Double> allTransactionAllUsers(List<User> users){
+        return users.stream()
+                .flatMap(user -> user.transactions().stream())
+                .map(Transaction::amount)
+                .sorted(Comparator.reverseOrder())
+                .toList();
+    }
+
+    //Уникальные слова в списке предложений, разделить массив
+    public static List<String> distinctWords(List<String> words){
+        return words.stream()
+                .flatMap(s -> Arrays.stream(s.split("\\W+")))
+                .map(String::toLowerCase)
+                .filter(w -> !w.isBlank())
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
+    //Все книги всех авторов
+    public static List<String> allBooksAllAuthors(List<Author> authors){
+        return authors.stream()
+                .flatMap(author -> author.books().stream())
+                .sorted()
+                .toList();
+    }
+
+    // Все уникальные навыки сотрудников вложенный массив
+    public static List<String> distinctSkills(List<Employee2> employee2s){
+        return employee2s.stream()
+                .flatMap(e -> e.skills().stream())
+                .map(String::toLowerCase)
+                .distinct()
+                .toList();
+    }
+
+    //Сумма зарплат по департаментам
+    public static Map<String, Double> sumSalaryByDepartment(List<Employee> employees){
+        return employees.stream()
+                .collect(Collectors.groupingBy(
+                        Employee::department,
+                        Collectors.summingDouble(Employee::salary)
+                ));
+    }
+
+    //Сумма всех заказов клиента
+    public static Map<String, Double> averageOrderByClient(List<Order> orders) {
+        return orders.stream()
+                .collect(Collectors.groupingBy(
+                        Order::customer,
+                        Collectors.summingDouble(Order::amount)
+                ));
     }
 
     //Самый дешевый товар по категории
