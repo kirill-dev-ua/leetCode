@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static java.util.Comparator.comparingDouble;
 import static java.util.Map.Entry.comparingByValue;
 import static java.util.stream.Collectors.*;
 
@@ -108,7 +109,117 @@ public class Main {
                 ))
         );
 
-        System.out.println(maxPriceGoodForClient2(orders2));
+
+        var s1 = new Student("Alice", 2);
+        var s2 = new Student("Bob", 3);
+        var s3 = new Student("Cara", 6);
+
+        var c1 = new Course(10, "Algorithms", 5);
+        var c2 = new Course(11, "Databases", 4);
+        var c3 = new Course(12, "Networks", 3);
+
+        List<Student> students1 = List.of(s1, s2, s3);
+        List<Course> courses = List.of(c1, c2, c3);
+
+        List<Enrollment> enrollments = List.of(
+                new Enrollment(1, 10, 88),
+                new Enrollment(1, 11, 92),
+                new Enrollment(2, 10, 75),
+                new Enrollment(2, 12, 81),
+                new Enrollment(3, 11, 95)
+        );
+
+        List<Sale> sales = List.of(
+                new Sale("North", "Electronics", 2, 1200.0),
+                new Sale("North", "Books", 5, 100.0),
+                new Sale("South", "Electronics", 1, 600.0),
+                new Sale("South", "Furniture", 3, 900.0),
+                new Sale("West", "Books", 4, 80.0)
+        );
+
+        var ac1 = new Actor(1, "Pitt");
+        var ac2 = new Actor(2, "Clooney");
+        var ac3 = new Actor(3, "Blanchett");
+
+        List<Actor> actors = List.of(ac1, ac2, ac3);
+
+        List<Movie> movies = List.of(
+                new Movie(1, "Ocean11", 2001, List.of(1, 2), 7.7),
+                new Movie(2, "Ocean13", 2007, List.of(1, 2, 3), 6.9),
+                new Movie(3, "DramaX", 2010, List.of(3), 7.5)
+        );
+
+        System.out.println(bestActor(actors, movies));
+    }
+
+    //Лучший актёр по сумме рейтингов фильмов (flatMapping + summingDouble + collectingAndThen)
+    public static String bestActor(List<Actor> actors, List<Movie> movies) {
+        return actors.stream()
+                .collect(collectingAndThen(
+                        groupingBy(
+                                Actor::name,
+                                flatMapping(
+                                        a -> movies.stream()
+                                                .filter(m -> m.actorIds().contains(a.id()))
+                                                .map(Movie::rating),
+                                        summingDouble(Double::doubleValue)
+                                )
+                        ),
+                        map -> map.entrySet().stream()
+                                .max(comparingDouble(Map.Entry::getValue))
+                                .map(Map.Entry::getKey)
+                                .orElse("Нет данных")));
+    }
+
+    //Выручка по магазину (summingDouble)
+    public static Map<String, Double> magazineSalary(List<Sale> sales) {
+        return sales.stream()
+                .collect(groupingBy(
+                        Sale::store,
+                        summingDouble(Sale::amount)
+                ));
+    }
+
+    //Самая дорогая категория (flatMapping + comparingDouble)
+    public static String mainCategoryByPrice(List<Order2> order2s) {
+        return order2s.stream()
+                .collect(flatMapping(
+                                order2 -> order2.products().stream(),
+                                groupingBy(
+                                        Product::category,
+                                        summingDouble(Product::price)
+                                )
+                        )
+                ).entrySet().stream()
+                .max(comparingDouble(Map.Entry::getValue))
+                .map(Map.Entry::getKey)
+                .orElse("Нет данных");
+    }
+
+    //Клиент с наибольшим количеством товаров (comparingInt)
+    public static String maxGoodsForClient(List<Order2> order2s) {
+        return order2s.stream()
+                .collect(Collectors.groupingBy(
+                        Order2::customer,
+                        summingInt(p -> p.products().size())
+                )).entrySet().stream().max(Map.Entry.comparingByValue()).toString();
+    }
+
+    //Количество уникальных категорий по клиенту (flatMapping + collectingAndThen)
+    public static Map<String, Integer> distinctCountCategoryByClient(List<Order2> order2s) {
+        return order2s.stream()
+                .collect(Collectors.groupingBy(
+                                Order2::customer,
+                                Collectors.collectingAndThen(
+                                        Collectors.flatMapping(
+                                                o -> o.products().stream()
+                                                        .map(Product::category),
+                                                Collectors.toSet()
+                                        ),
+                                        Set::size
+                                )
+                        )
+                );
     }
 
     //Самый дорогой товар по клиенту
@@ -120,7 +231,7 @@ public class Main {
                                 Collectors.flatMapping(
                                         o -> o.products().stream(),
                                         Collectors.maxBy(
-                                                Comparator.comparingDouble(Product::price))
+                                                comparingDouble(Product::price))
                                 ), Optional::get
                         )));
     }
@@ -134,7 +245,7 @@ public class Main {
                                 Collectors.flatMapping(
                                         p -> p.products().stream(),
                                         Collectors.maxBy(
-                                                Comparator.comparingDouble(Product::price))
+                                                comparingDouble(Product::price))
                                 ), Optional::get
                         )
                 ));
@@ -241,7 +352,7 @@ public class Main {
                                 Collectors.flatMapping(
                                         o -> o.products().stream(),
                                         Collectors.maxBy(
-                                                Comparator.comparingDouble(Product::price))
+                                                comparingDouble(Product::price))
                                 ),
                                 Optional::get
                         )
@@ -336,7 +447,7 @@ public class Main {
                         Product::category,
                         Collectors.collectingAndThen(
                                 Collectors.minBy(
-                                        Comparator.comparingDouble(Product::price)),
+                                        comparingDouble(Product::price)),
                                 Optional::get
                         )
                 ));
@@ -348,7 +459,7 @@ public class Main {
                 .collect(toMap(Product::category,
                         Function.identity(),
                         BinaryOperator.minBy(
-                                Comparator.comparingDouble(Product::price))));
+                                comparingDouble(Product::price))));
     }
 
 
@@ -552,7 +663,7 @@ public class Main {
     //Сортировка по убыванию суммы покупок
     public static List<Student> sortByTotalSpentDesc(List<Student> customers) {
         return customers.stream()
-                .sorted(Comparator.comparingDouble(Student::score))
+                .sorted(comparingDouble(Student::score))
                 .toList().reversed();
     }
 
