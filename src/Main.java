@@ -149,7 +149,27 @@ public class Main {
                 new Movie(3, "DramaX", 2010, List.of(3), 7.5)
         );
 
-        System.out.println(bestActor(actors, movies));
+        List<Book> books = List.of(
+                new Book(1, "Clean Code", "Robert C. Martin", "Programming", 2008, 4.7),
+                new Book(2, "Effective Java", "Joshua Bloch", "Programming", 2018, 4.9),
+                new Book(3, "Design Patterns", "Erich Gamma", "Programming", 1994, 4.6),
+                new Book(4, "Atomic Habits", "James Clear", "Self-help", 2018, 4.8),
+                new Book(5, "Deep Work", "Cal Newport", "Self-help", 2016, 4.6),
+                new Book(6, "Thinking, Fast and Slow", "Daniel Kahneman", "Psychology", 2011, 4.2)
+        );
+
+        getBooksWithHighestRating(books);
+    }
+
+    public static void getBooksWithHighestRating(List<Book> books) {
+        books.stream()
+                .collect(Collectors.groupingBy(
+                        Book::category,
+                        Collectors.collectingAndThen(
+                                Collectors.maxBy(Comparator.comparingDouble(Book::rang)),
+                                Optional::orElseThrow
+                        )
+                )).forEach((category, book) -> System.out.println(category + ":" + book.name()));
     }
 
     //Лучший актёр по сумме рейтингов фильмов (flatMapping + summingDouble + collectingAndThen)
